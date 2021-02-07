@@ -13,11 +13,12 @@ module.exports = {
       },
       async handler(ctx) {
         const { userId, productId, quantity } = ctx.params;
-        let cart = await this.adapter.findOne({ userId });
+        let cart = await this.adapter.findOne({ userId, _type: 'cart' });
 
         if (!cart) {
           cart = await this.adapter.insert({
             userId,
+            _type: 'cart',
             items: [],
           });
         }
@@ -62,33 +63,71 @@ module.exports = {
           throw new Errors.MoleculerClientError('Missing payment ID for checkout');
         }
 
+        const statusItem = await this.adapter.findOne({ userId, _type: 'cart-status' });
+        if (statusItem && statusItem.status === 'started') {
+          throw new Errors.MoleculerClientError(`Checkout is already in progress for user: ${userId}`);
+        }
+
         try {
           const amount = await ctx.call('pricing.get', { userId, orderItems: cart.items });
 
+          const status = await this.adapter.insert({ _type: 'cart-status', userId, status: 'started' });
           ctx.emit('cart.checkout', {
             userId,
             paymentId: cart.paymentId,
             amount,
           });
+
+          return status;
         } catch (e) {
           throw e;
         }
       },
     },
+
+    status: {
+      params: {
+        userId: 'string',
+      },
+
+      async handler(ctx) {
+        const { userId } = ctx.params;
+
+        const statusItem = await this.adapter.findOne({ userId, _type: 'cart-status' });
+        if (statusItem) {
+          return statusItem.status;
+        }
+
+        return null;
+      },
+    },
   },
 
   events: {
-    'cart.payment-completed'(payload) {
-      console.log(payload);
+    'cart.payment-completed': {
+      async handler(ctx) {
+        const { userId } = ctx.params;
+        await this.updateCartStatus(userId, 'completed');
+
+        ctx.emit('cart.checkout-complete', { userId });
+      },
     },
-    'cart.payment-failed'(payload) {
-      console.log(payload);
+    async 'cart.payment-failed'(ctx) {
+      const { userId } = ctx.params;
+      await this.updateCartStatus(userId, 'payment-failed');
     },
   },
 
   methods: {
+    async updateCartStatus(userId, status) {
+      const statusItem = await this.adapter.findOne({ userId, _type: 'cart-status' });
+      if (statusItem) {
+        return await this.adapter.updateById(statusItem._id, { $set: { status } });
+      }
+    },
+
     async ensureCartExists(userId) {
-      let cart = await this.adapter.findOne({ userId });
+      let cart = await this.adapter.findOne({ userId, _type: 'cart' });
 
       if (!cart) {
         throw new Errors.MoleculerClientError(`Missing cart for user: ${userId}`);

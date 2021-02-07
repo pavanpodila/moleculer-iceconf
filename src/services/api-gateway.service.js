@@ -17,6 +17,7 @@ module.exports = {
           'POST cart/add': 'cart.addItem',
           'POST cart/addPayment': 'cart.addPayment',
           'POST cart/checkout': 'cart.checkout',
+          'POST cart/status': 'cart.status',
         },
       },
     ],

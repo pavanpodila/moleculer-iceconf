@@ -1,0 +1,26 @@
+{
+  "name": "checkout-workflow",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "develop:service": "moleculer-runner --repl --hot ./src/services/{api,cart}*",
+    "start:service": "moleculer-runner src/services",
+    "start:direct-broker-service": "node ./src/using-broker-directly.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kafka-node": "^5.0.0",
+    "moleculer": "^0.14.11",
+    "moleculer-db": "^0.8.11",
+    "moleculer-jaeger": "^0.2.3",
+    "moleculer-web": "^0.9.1",
+    "nats": "^1.4.12",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "moleculer-repl": "^0.6.4",
+    "prettier": "^2.2.1"
+  }
+}

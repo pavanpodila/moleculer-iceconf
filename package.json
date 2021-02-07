@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "develop:service": "moleculer-runner --repl --hot ./src/services/{api,cart}*",
+    "develop:service": "moleculer-runner --repl --hot src/services",
     "start:service": "moleculer-runner src/services",
     "start:direct-broker-service": "node ./src/using-broker-directly.js"
   },

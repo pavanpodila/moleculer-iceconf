@@ -1,4 +1,5 @@
-- Fire event when a plan price changes
-- Run a workflow to give credit back to all affected customers
-- Daemon (Workflow) process that identifies state changes and applies
----
+# Sample code for Moleculer.js
+
+- Run `npm install` to get started
+- Run `docker-compose up` to start **zookeeper**, **kafka** and **jaeger**  
+- Refer to the scripts in `package.json` for running services
